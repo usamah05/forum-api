@@ -1,3 +1,5 @@
+const AddThreadUseCase = require('../../../../Applications/use_case/AddThreadUseCase');
+
 class ThreadHandler {
   constructor(container) {
     this._container = container;

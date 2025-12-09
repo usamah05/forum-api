@@ -16,6 +16,32 @@ describe('Threads endpoint', () => {
     await AuthenticationTableTestHelper.cleanTable();
   });
 
+  async function getAccessToken(server, username = 'masboy', password = 'secret') {
+    // Register user
+    await server.inject({
+      method: 'POST',
+      url: '/users',
+      payload: {
+        username,
+        password,
+        fullname: 'Mas Boy',
+      },
+    });
+
+    // Login
+    const authResponse = await server.inject({
+      method: 'POST',
+      url: '/authentications',
+      payload: {
+        username,
+        password,
+      },
+    });
+
+    const { data: { accessToken } } = JSON.parse(authResponse.payload);
+    return accessToken;
+  }
+
   describe('when POST /threads', () => {
     it('should response 201 and persisted thread', async () => {
       // Arrange
@@ -25,26 +51,7 @@ describe('Threads endpoint', () => {
       };
 
       const server = await createServer(container);
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-          fullname: 'Mas Boy',
-        },
-      });
-
-      const authenticationResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-        },
-      });
-
-      const { data: { accessToken } } = JSON.parse(authenticationResponse.payload);
+      const accessToken = await getAccessToken(server);
 
       // Action
       const response = await server.inject({
@@ -73,27 +80,7 @@ describe('Threads endpoint', () => {
       };
 
       const server = await createServer(container);
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-          fullname: 'Mas Boy',
-        },
-      });
-
-      const authenticationResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-        },
-      });
-
-      const { data: { accessToken } } = JSON.parse(authenticationResponse.payload);
-
+      const accessToken = await getAccessToken(server);
       // Action
       const response = await server.inject({
         method: 'POST',
@@ -119,26 +106,7 @@ describe('Threads endpoint', () => {
       };
 
       const server = await createServer(container);
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-          fullname: 'Mas Boy',
-        },
-      });
-
-      const authenticationResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-        },
-      });
-
-      const { data: { accessToken } } = JSON.parse(authenticationResponse.payload);
+      const accessToken = await getAccessToken(server);
 
       // Action
       const response = await server.inject({
@@ -165,27 +133,7 @@ describe('Threads endpoint', () => {
       };
 
       const server = await createServer(container);
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-          fullname: 'Mas Boy',
-        },
-      });
-
-      const authenticationResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-        },
-      });
-
-      const { data: { accessToken } } = JSON.parse(authenticationResponse.payload);
-
+      const accessToken = await getAccessToken(server);
       // Action
       const response = await server.inject({
         method: 'POST',
@@ -258,27 +206,7 @@ describe('Threads endpoint', () => {
       };
 
       const server = await createServer(container);
-
-      await server.inject({
-        method: 'POST',
-        url: '/users',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-          fullname: 'Mas Boy',
-        },
-      });
-
-      const authenticationResponse = await server.inject({
-        method: 'POST',
-        url: '/authentications',
-        payload: {
-          username: 'masboy',
-          password: 'secret',
-        },
-      });
-
-      const { data: { accessToken } } = JSON.parse(authenticationResponse.payload);
+      const accessToken = await getAccessToken(server);
 
       // Action
       const response = await server.inject({
