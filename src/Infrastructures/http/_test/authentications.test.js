@@ -170,7 +170,8 @@ describe('/authentications endpoint', () => {
           password: 'secret',
         },
       });
-      const { data: { refreshToken } } = JSON.parse(loginResponse.payload);
+      const loginJson = JSON.parse(loginResponse.payload);
+      const refreshToken = loginJson.data.refreshToken;
 
       // Action
       const response = await server.inject({

@@ -20,8 +20,10 @@ DomainErrorTranslator._directories = {
   'DELETE_AUTHENTICATION_USE_CASE.PAYLOAD_NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('refresh token harus string'),
   'NEW_THREAD.LACK_REQUIRED_PROPERTY': new InvariantError('tidak dapat membuat thread baru karena properti yang dibutuhkan tidak ada'),
   'NEW_THREAD.DATA_TYPE_NOT_MEET_SPECIFICATION': new InvariantError('tidak dapat membuat thread baru karena tipe data tidak sesuai'),
-  'NEW_THREAD.TITLE_LIMIT_CHAR': new InvariantError('tidak dapat membuat thread baru karena karakter title melebihi batas limit'),
+  'NEW_THREAD.TITLE_LIMIT_CHAR': new InvariantError('tidak dapat membuat thread baru karena karakter judul melebihi batas maksimal'),
   'GET_THREAD.NO_THREAD_FOUND': new NotFoundError('thread tidak ditemukan'),
+  'username tidak ditemukan': new InvariantError('username tidak ditemukan'),
+  'user tidak ditemukan': new InvariantError('username tidak ditemukan'),
 };
 
 module.exports = DomainErrorTranslator;

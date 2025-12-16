@@ -11,7 +11,8 @@ class ThreadHandler {
     const addThreadUseCase = this._container.getInstance(AddThreadUseCase.name);
 
     const addedThread = await addThreadUseCase.execute({
-      newThread: request.payload,
+      title: request.payload.title,
+      body: request.payload.body,
       owner,
     });
 

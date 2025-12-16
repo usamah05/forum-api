@@ -16,29 +16,38 @@ describe('Threads endpoint', () => {
     await AuthenticationTableTestHelper.cleanTable();
   });
 
-  async function getAccessToken(server, username = 'masboy', password = 'secret') {
-    // Register user
-    await server.inject({
-      method: 'POST',
-      url: '/users',
-      payload: {
-        username,
-        password,
-        fullname: 'Mas Boy',
-      },
+  let testCounter = 0;
+
+  async function getAccessToken() {
+    testCounter++;
+    const username = `masboy${testCounter}`;
+    const password = 'secret';
+    const fullname = 'Mas Boy';
+    const userId = `user-${testCounter}`;
+
+    // Add user directly using test helper
+    await UserTableTestHelper.addUser({
+      id: userId,
+      username,
+      password,
+      fullname,
     });
 
-    // Login
-    const authResponse = await server.inject({
-      method: 'POST',
-      url: '/authentications',
-      payload: {
-        username,
-        password,
-      },
+    // Create authentication tokens
+    const authenticationTokenManager = container.getInstance('AuthenticationTokenManager');
+    const accessToken = await authenticationTokenManager.createAccessToken({
+      username,
+      id: userId,
+    });
+    const refreshToken = await authenticationTokenManager.createRefreshToken({
+      username,
+      id: userId,
     });
 
-    const { data: { accessToken } } = JSON.parse(authResponse.payload);
+    // Add token to database
+    const authenticationRepository = container.getInstance('AuthenticationRepository');
+    await authenticationRepository.addToken(refreshToken);
+
     return accessToken;
   }
 
@@ -101,7 +110,7 @@ describe('Threads endpoint', () => {
     it('should response 400 when request payload not meet data type specification', async () => {
       // Arrange
       const requestPayload = {
-        title: 123,
+        title: true,
         body: 'sebuah body thread',
       };
 
@@ -125,7 +134,7 @@ describe('Threads endpoint', () => {
       expect(responseJson.message).toEqual('tidak dapat membuat thread baru karena tipe data tidak sesuai');
     });
 
-    it('should response 400 when "titile" contain more than 50 characters', async () => {
+    it('should response 400 when "title" contain more than 50 characters', async () => {
       // Arrange
       const requestPayload = {
         title: 'a'.repeat(51),
