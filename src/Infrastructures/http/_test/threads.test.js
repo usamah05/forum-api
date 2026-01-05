@@ -11,9 +11,9 @@ describe('Threads endpoint', () => {
   });
 
   afterEach(async () => {
-    await UserTableTestHelper.cleanTable();
-    await ThreadTableTestHelper.cleanTable();
     await AuthenticationTableTestHelper.cleanTable();
+    await ThreadTableTestHelper.cleanTable();
+    await UserTableTestHelper.cleanTable();
   });
 
   let testCounter = 0;

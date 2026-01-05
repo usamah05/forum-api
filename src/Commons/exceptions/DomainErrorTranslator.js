@@ -1,5 +1,6 @@
 const InvariantError = require('./InvariantError');
 const NotFoundError = require('./NotFoundError');
+const AuthorizationError = require('./AuthorizationError');
 
 const DomainErrorTranslator = {
   translate(error) {
@@ -24,6 +25,13 @@ DomainErrorTranslator._directories = {
   'GET_THREAD.NO_THREAD_FOUND': new NotFoundError('thread tidak ditemukan'),
   'username tidak ditemukan': new InvariantError('username tidak ditemukan'),
   'user tidak ditemukan': new InvariantError('username tidak ditemukan'),
+  'NEW_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('tidak dapat membuat komentar pada thread dikarenakan properti yang dibutuhkan tidak ada'),
+  'NEW_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('content harus string'),
+  'ADDED_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION': new InvariantError('content harus string'),
+  'ADDED_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY': new InvariantError('properti yang dibutuhkan kosong'),
+  'GET_THREAD_COMMENT.NO_THREAD_COMMENT_FOUND': new NotFoundError('komen tidak ditemukan'),
+  'VERIFY_COMMENT_OWNER.ACCESS_FORBIDEN': new AuthorizationError('kamu tidak punya akses untuk komentar ini'),
+  'DELETE_THREAD_COMMENT.ACCESS_FORBIDEN': new AuthorizationError('kamu tidak punya akses untuk menghapus komentar ini'),
 };
 
 module.exports = DomainErrorTranslator;

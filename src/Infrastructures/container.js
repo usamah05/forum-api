@@ -9,13 +9,15 @@ const Jwt = require('@hapi/jwt');
 const pool = require('./database/postgres/pool');
 
 // service (repository, helper, manager, etc)
+const NewCommentValidator = require('./validator/newCommentValidator');
 const UserRepository = require('../Domains/users/UserRepository');
 const PasswordHash = require('../Applications/security/PasswordHash');
 const UserRepositoryPostgres = require('./repository/UserRepositoryPostgres');
 const BcryptPasswordHash = require('./security/BcryptPasswordHash');
 const ThreadRepository = require('../Domains/threads/ThreadRepository');
 const ThreadRepositoryPostgres = require('./repository/ThreadRepositoryPostgres');
-
+const CommentRepository = require('../Domains/comments/CommentRepository');
+const CommentRepositoryPostgres = require('./repository/CommentRepositoryPostgres');
 
 
 // use case
@@ -28,12 +30,19 @@ const AuthenticationRepositoryPostgres = require('./repository/AuthenticationRep
 const LogoutUserUseCase = require('../Applications/use_case/LogoutUserUseCase');
 const RefreshAuthenticationUseCase = require('../Applications/use_case/RefreshAuthenticationUseCase');
 const AddThreadUseCase = require('../Applications/use_case/AddThreadUseCase');
+const AddCommentUseCase = require('../Applications/use_case/AddCommentUseCase');
+const DeleteCommentUseCase = require('../Applications/use_case/DeleteCommentUseCase');
+// const GetDetailThreadUseCase = require('../Applications/use_case/GetDetailThreadUseCase');
 
-// creating container
+// // creating container
 const container = createContainer();
 
 // registering services and repository
 container.register([
+  {
+    key: 'newCommentValidator',
+    Class: NewCommentValidator,
+  },
   {
     key: UserRepository.name,
     Class: UserRepositoryPostgres,
@@ -84,6 +93,20 @@ container.register([
   {
     key: ThreadRepository.name,
     Class: ThreadRepositoryPostgres,
+    parameter: {
+      dependencies: [
+        {
+          concrete: pool,
+        },
+        {
+          concrete: nanoid,
+        },
+      ],
+    },
+  },
+  {
+    key: CommentRepository.name,
+    Class: CommentRepositoryPostgres,
     parameter: {
       dependencies: [
         {
@@ -183,7 +206,62 @@ container.register([
         },
       ],
     },
-  }
+  },
+  {
+    key: AddCommentUseCase.name,
+    Class: AddCommentUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'threadRepository',
+          internal: ThreadRepository.name,
+        },
+        {
+          name: 'commentRepository',
+          internal: CommentRepository.name,
+        },
+        {
+          name: 'newCommentValidator',
+          internal: 'newCommentValidator',
+        },
+      ],
+    },
+  },
+  {
+    key: DeleteCommentUseCase.name,
+    Class: DeleteCommentUseCase,
+    parameter: {
+      injectType: 'destructuring',
+      dependencies: [
+        {
+          name: 'threadRepository',
+          internal: ThreadRepository.name,
+        },
+        {
+          name: 'commentRepository',
+          internal: CommentRepository.name,
+        },
+      ],
+    },
+  },
+  // {
+  //   key: GetDetailThreadUseCase.name,
+  //   Class: GetDetailThreadUseCase,
+  //   parameter: {
+  //     injectType: 'destructuring',
+  //     dependencies: [
+  //       {
+  //         name: 'threadRepository',
+  //         internal: ThreadRepository.name,
+  //       },
+  //       {
+  //         name: 'commentRepository',
+  //         internal: CommentRepository.name,
+  //       },
+  //     ],
+  //   },
+  // },
 ]);
 
 module.exports = container;
