@@ -9,6 +9,12 @@ const pool = require('../../database/postgres/pool');
 const CommentRepositoryPostgres = require('../CommentRepositoryPostgres');
 
 describe('CommentRepositoryPostgres', () => {
+  beforeEach(async () => {
+    await CommentsTableTestHelper.cleanTable();
+    await ThreadTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+  });
+
   afterEach(async () => {
     await CommentsTableTestHelper.cleanTable();
     await ThreadTableTestHelper.cleanTable();
@@ -22,7 +28,7 @@ describe('CommentRepositoryPostgres', () => {
   describe('addComment function', () => {
     it('should persist new comment and return added comment correctly', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
 
       const newComment = new NewComment({
@@ -59,7 +65,7 @@ describe('CommentRepositoryPostgres', () => {
 
     it('should not throw NotFoundError when comment found', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
       await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-123', owner: 'user-123' });
 
@@ -83,7 +89,7 @@ describe('CommentRepositoryPostgres', () => {
 
     it('should throw AuthorizationError when user is not the owner', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await UsersTableTestHelper.addUser({ id: 'user-456', username: 'john' });
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
       await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-123', owner: 'user-123' });
@@ -97,7 +103,7 @@ describe('CommentRepositoryPostgres', () => {
 
     it('should not throw AuthorizationError when user is the owner', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
       await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-123', owner: 'user-123' });
 
@@ -112,7 +118,7 @@ describe('CommentRepositoryPostgres', () => {
   describe('deleteCommentById function', () => {
     it('should soft delete comment from database', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
       await CommentsTableTestHelper.addComment({ id: 'comment-123', threadId: 'thread-123', owner: 'user-123' });
 
@@ -142,7 +148,7 @@ describe('CommentRepositoryPostgres', () => {
 
     it('should return comments correctly', async () => {
       // Arrange
-      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'dicoding' });
+      await UsersTableTestHelper.addUser({});
       await ThreadTableTestHelper.addThread({ id: 'thread-123', owner: 'user-123' });
       await CommentsTableTestHelper.addComment({
         id: 'comment-123',
@@ -171,6 +177,9 @@ describe('CommentRepositoryPostgres', () => {
       expect(comments[0].content).toEqual('comment pertama');
       expect(comments[0].is_delete).toBe(false);
       expect(comments[1].id).toEqual('comment-456');
+      expect(comments[1].username).toEqual('dicoding');
+      expect(comments[1].content).toEqual('comment kedua');
+      expect(comments[1].is_delete).toBe(false);
     });
   });
 });

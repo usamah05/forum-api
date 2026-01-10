@@ -8,22 +8,24 @@ describe('AddThreadUseCase', () => {
     const useCasePayload = {
       title: 'sebuah thread',
       body: 'sebuah body thread',
+      owner: 'user-123',
     };
 
     const expectedAddedThread = {
       id: 'thread-123',
       title: useCasePayload.title,
-      owner: 'user-123',
+      owner: useCasePayload.owner,
     };
 
-    // creating dependency of use case
     const mockThreadRepository = new ThreadRepository();
 
-    // mocking needed functions
     mockThreadRepository.addThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedAddedThread));
+      .mockImplementation(() => Promise.resolve({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        owner: 'user-123',
+      }));
 
-    // creating use case instance
     const addThreadUseCase = new AddThreadUseCase({
       threadRepository: mockThreadRepository,
     });
@@ -33,9 +35,14 @@ describe('AddThreadUseCase', () => {
 
     // Assert
     expect(addedThread).toStrictEqual(expectedAddedThread);
-    expect(mockThreadRepository.addThread).toBeCalledWith({
-      newThread: new NewThread(useCasePayload),
-    });
+
+    expect(mockThreadRepository.addThread).toBeCalledWith(
+      new NewThread({
+        title: useCasePayload.title,
+        body: useCasePayload.body,
+        owner: useCasePayload.owner,
+      })
+    );
   });
 
   it('should throw error when "title" is missing', async () => {
@@ -123,6 +130,7 @@ describe('AddThreadUseCase', () => {
     const useCasePayload = {
       title: 'sebuah thread',
       body: 'sebuah body thread',
+      owner: 'user-123',
     };
 
     const mockThreadRepository = new ThreadRepository();
@@ -137,11 +145,12 @@ describe('AddThreadUseCase', () => {
     await addThreadUseCase.execute(useCasePayload);
 
     // Assert
-    expect(mockThreadRepository.addThread).toBeCalledWith({
-      newThread: expect.objectContaining(new NewThread({
+    expect(mockThreadRepository.addThread).toBeCalledWith(
+      new NewThread({
         title: useCasePayload.title,
         body: useCasePayload.body,
-      })),
-    });
+        owner: useCasePayload.owner,
+      })
+    );
   });
 });

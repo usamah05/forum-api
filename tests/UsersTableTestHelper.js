@@ -5,6 +5,8 @@ const UsersTableTestHelper = {
   async addUser({
     id = 'user-123', username = 'dicoding', password = 'secret', fullname = 'Dicoding Indonesia',
   }) {
+    // Delete any existing user with the same id to avoid duplicate key error
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
     const query = {
       text: 'INSERT INTO users VALUES($1, $2, $3, $4)',
       values: [id, username, password, fullname],

@@ -438,6 +438,7 @@ describe('Threads endpoint', () => {
         },
       });
 
+      expect(comment1Response.statusCode).toEqual(201);
       const comment1 = JSON.parse(comment1Response.payload);
       const comment1Id = comment1.data.addedComment.id;
 
@@ -455,6 +456,7 @@ describe('Threads endpoint', () => {
         },
       });
 
+      expect(comment2Response.statusCode).toEqual(201);
       const comment2 = JSON.parse(comment2Response.payload);
       const comment2Id = comment2.data.addedComment.id;
 

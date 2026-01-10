@@ -23,14 +23,13 @@ describe('ThreadRepositoryPostgres', () => {
       const newThread = new NewThread({
         title: 'sebuah thread',
         body: 'sebuah body thread',
+        owner: 'user-123',
       });
       const fakeIdGenerator = () => '123';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      const addedThread = await threadRepositoryPostgres.addThread({
-        newThread, owner: 'user-123',
-      });
+      const addedThread = await threadRepositoryPostgres.addThread(newThread);
 
       // Assert
       const threads = await ThreadTableTestHelper.findThreadById('thread-123');
@@ -49,14 +48,13 @@ describe('ThreadRepositoryPostgres', () => {
       const newThread = new NewThread({
         title: 'sebuah thread',
         body: 'sebuah body thread',
+        owner: 'user-123',
       });
       const fakeIdGenerator = () => '123';
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, fakeIdGenerator);
 
       // Action
-      const addedThread = await threadRepositoryPostgres.addThread({
-        newThread, owner: 'user-123',
-      });
+      const addedThread = await threadRepositoryPostgres.addThread(newThread);
 
       // Assert
       expect(addedThread).toBeInstanceOf(AddedThread);
