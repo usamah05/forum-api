@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 const pool = require('../src/Infrastructures/database/postgres/pool');
+const UsersTableTestHelper = require('./UsersTableTestHelper');
 
 const ThreadTableTestHelper = {
   async addThread({
@@ -11,6 +12,15 @@ const ThreadTableTestHelper = {
     owner = userId,
     date = new Date().toISOString(),
   }) {
+    // Check if user exists, if not create it (foreign key constraint)
+    const userResult = await pool.query('SELECT id FROM users WHERE id = $1', [owner]);
+    if (userResult.rowCount === 0) {
+      // User doesn't exist, create it with default values
+      await UsersTableTestHelper.addUser({
+        id: owner,
+      });
+    }
+
     // Delete any existing thread with the same id to avoid duplicate key error
     await pool.query('DELETE FROM threads WHERE id = $1', [id]);
     const query = {

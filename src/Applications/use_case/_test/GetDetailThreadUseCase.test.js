@@ -9,7 +9,7 @@ describe('GetDetailThreadUseCase', () => {
     // Arrange
     const threadId = 'thread-123';
 
-    const expectedThread = {
+    const threadFromRepo = {
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
@@ -17,7 +17,7 @@ describe('GetDetailThreadUseCase', () => {
       username: 'dicoding',
     };
 
-    const expectedComments = [
+    const commentsFromRepo = [
       {
         id: 'comment-123',
         username: 'dicoding',
@@ -37,10 +37,10 @@ describe('GetDetailThreadUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
 
-    mockThreadRepository.getDetailThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedThread));
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve(threadFromRepo));
     mockCommentRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedComments));
+      .mockImplementation(() => Promise.resolve(commentsFromRepo));
 
     const getDetailThreadUseCase = new GetDetailThreadUseCase({
       threadRepository: mockThreadRepository,
@@ -51,7 +51,7 @@ describe('GetDetailThreadUseCase', () => {
     const detailThread = await getDetailThreadUseCase.execute(threadId);
 
     // Assert
-    expect(detailThread).toEqual({
+    expect(detailThread).toStrictEqual({
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
@@ -72,7 +72,8 @@ describe('GetDetailThreadUseCase', () => {
         },
       ],
     });
-    expect(mockThreadRepository.getDetailThread).toHaveBeenCalledWith(threadId);
+
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(threadId);
     expect(mockCommentRepository.getCommentsByThreadId).toHaveBeenCalledWith(threadId);
   });
 
@@ -80,20 +81,12 @@ describe('GetDetailThreadUseCase', () => {
     // Arrange
     const threadId = 'thread-123';
 
-    const expectedThread = {
-      id: 'thread-123',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2024-01-01',
-      username: 'dicoding',
-    };
-
-    const expectedComments = [
+    const rawCommentsFromRepo = [
       {
         id: 'comment-123',
         username: 'dicoding',
         date: '2024-01-01T00:00:00.000Z',
-        content: 'sebuah comment',
+        content: 'konten asli yang harusnya hilang',
         is_delete: true,
       },
       {
@@ -108,10 +101,15 @@ describe('GetDetailThreadUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
 
-    mockThreadRepository.getDetailThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedThread));
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        username: 'dicoding',
+      }));
+
     mockCommentRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedComments));
+      .mockImplementation(() => Promise.resolve(rawCommentsFromRepo));
 
     const getDetailThreadUseCase = new GetDetailThreadUseCase({
       threadRepository: mockThreadRepository,
@@ -124,51 +122,40 @@ describe('GetDetailThreadUseCase', () => {
     // Assert
     expect(detailThread.comments[0].content).toEqual('**komentar telah dihapus**');
     expect(detailThread.comments[1].content).toEqual('comment kedua');
+
+    expect(detailThread.comments[0].is_delete).toBeUndefined();
   });
 
   it('should sort comments by date ascending', async () => {
     // Arrange
     const threadId = 'thread-123';
 
-    const expectedThread = {
-      id: 'thread-123',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2024-01-01',
-      username: 'dicoding',
-    };
-
-    const expectedComments = [
+    const unsortedCommentsFromRepo = [
       {
         id: 'comment-456',
-        username: 'john',
         date: '2024-01-03T00:00:00.000Z',
         content: 'comment ketiga',
-        is_delete: false,
       },
       {
         id: 'comment-123',
-        username: 'dicoding',
         date: '2024-01-01T00:00:00.000Z',
         content: 'comment pertama',
-        is_delete: false,
       },
       {
         id: 'comment-789',
-        username: 'jane',
         date: '2024-01-02T00:00:00.000Z',
         content: 'comment kedua',
-        is_delete: false,
       },
     ];
 
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
 
-    mockThreadRepository.getDetailThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedThread));
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({ id: 'thread-123' }));
+
     mockCommentRepository.getCommentsByThreadId = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedComments));
+      .mockImplementation(() => Promise.resolve(unsortedCommentsFromRepo));
 
     const getDetailThreadUseCase = new GetDetailThreadUseCase({
       threadRepository: mockThreadRepository,
@@ -180,19 +167,22 @@ describe('GetDetailThreadUseCase', () => {
 
     // Assert
     expect(detailThread.comments).toHaveLength(3);
+
     expect(detailThread.comments[0].id).toEqual('comment-123');
-    expect(detailThread.comments[0].content).toEqual('comment pertama');
+    expect(detailThread.comments[0].date).toEqual('2024-01-01T00:00:00.000Z');
+
     expect(detailThread.comments[1].id).toEqual('comment-789');
-    expect(detailThread.comments[1].content).toEqual('comment kedua');
+    expect(detailThread.comments[1].date).toEqual('2024-01-02T00:00:00.000Z');
+
     expect(detailThread.comments[2].id).toEqual('comment-456');
-    expect(detailThread.comments[2].content).toEqual('comment ketiga');
+    expect(detailThread.comments[2].date).toEqual('2024-01-03T00:00:00.000Z');
   });
 
   it('should return thread with empty comments when no comments found', async () => {
     // Arrange
     const threadId = 'thread-123';
 
-    const expectedThread = {
+    const threadFromRepo = {
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
@@ -203,8 +193,9 @@ describe('GetDetailThreadUseCase', () => {
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
 
-    mockThreadRepository.getDetailThread = jest.fn()
-      .mockImplementation(() => Promise.resolve(expectedThread));
+    mockThreadRepository.getThreadById = jest.fn()
+      .mockImplementation(() => Promise.resolve({ ...threadFromRepo }));
+
     mockCommentRepository.getCommentsByThreadId = jest.fn()
       .mockImplementation(() => Promise.resolve([]));
 
@@ -217,13 +208,17 @@ describe('GetDetailThreadUseCase', () => {
     const detailThread = await getDetailThreadUseCase.execute(threadId);
 
     // Assert
-    expect(detailThread).toEqual({
+
+    expect(detailThread).toStrictEqual({
       id: 'thread-123',
       title: 'sebuah thread',
       body: 'sebuah body thread',
       date: '2024-01-01',
       username: 'dicoding',
-      comments: [],
+      comments: [], // <--- Inilah hasil transformasinya
     });
+
+    expect(mockThreadRepository.getThreadById).toHaveBeenCalledWith(threadId);
+    expect(mockCommentRepository.getCommentsByThreadId).toHaveBeenCalledWith(threadId);
   });
 });

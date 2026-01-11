@@ -94,7 +94,7 @@ describe('ThreadRepositoryPostgres', () => {
     const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
     // Action & Assert
-    await expect(threadRepositoryPostgres.getDetailThread('thread-xxx'))
+    await expect(threadRepositoryPostgres.getThreadById('thread-xxx'))
       .rejects.toThrowError('GET_THREAD.NO_THREAD_FOUND');
   });
 
@@ -110,7 +110,7 @@ describe('ThreadRepositoryPostgres', () => {
     });
     const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
     // Action
-    const thread = await threadRepositoryPostgres.getDetailThread('thread-123');
+    const thread = await threadRepositoryPostgres.getThreadById('thread-123');
     // Assert
     expect(thread).toStrictEqual({
       id: 'thread-123',
@@ -121,13 +121,13 @@ describe('ThreadRepositoryPostgres', () => {
     });
   });
 
-  describe('getDetailThread function', () => {
+  describe('getThreadById function', () => {
     it('should throw Error when thread not found', async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action & Assert
-      await expect(threadRepositoryPostgres.getDetailThread('thread-123'))
+      await expect(threadRepositoryPostgres.getThreadById('thread-123'))
         .rejects
         .toThrowError('GET_THREAD.NO_THREAD_FOUND');
     });
@@ -145,7 +145,7 @@ describe('ThreadRepositoryPostgres', () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       //Action
-      const threadDetail = await threadRepositoryPostgres.getDetailThread('thread-123');
+      const threadDetail = await threadRepositoryPostgres.getThreadById('thread-123');
       // Assert
       expect(threadDetail).toBeDefined();
       expect(threadDetail.id).toEqual('thread-123');
@@ -168,7 +168,7 @@ describe('ThreadRepositoryPostgres', () => {
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action
-      const threadDetail = await threadRepositoryPostgres.getDetailThread('thread-456');
+      const threadDetail = await threadRepositoryPostgres.getThreadById('thread-456');
 
       // Assert
       expect(threadDetail).toHaveProperty('id', 'thread-456');

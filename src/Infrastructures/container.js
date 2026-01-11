@@ -221,10 +221,6 @@ container.register([
           name: 'commentRepository',
           internal: CommentRepository.name,
         },
-        {
-          name: 'newCommentValidator',
-          internal: 'newCommentValidator',
-        },
       ],
     },
   },

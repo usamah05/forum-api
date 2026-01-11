@@ -5,7 +5,7 @@ const NewComment = require('../../../Domains/comments/entities/NewComment');
 const AddedComment = require('../../../Domains/comments/entities/AddedComment');
 
 describe('AddCommentUseCase', () => {
-  it('should throw InvariantError when payload validation fails', async () => {
+  it('should throw error when payload is invalid', async () => {
     // Arrange
     const useCasePayload = {
       content: 123,
@@ -15,22 +15,15 @@ describe('AddCommentUseCase', () => {
 
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
-    const mockNewCommentValidator = {
-      validate: jest.fn().mockImplementation(() => {
-        throw new Error('validation error');
-      }),
-    };
 
     const addCommentUseCase = new AddCommentUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
-      newCommentValidator: mockNewCommentValidator,
     });
 
     // Action & Assert
     await expect(addCommentUseCase.execute(useCasePayload, threadId, owner))
-      .rejects.toThrowError('ADDED_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
-    expect(mockNewCommentValidator.validate).toHaveBeenCalledWith(useCasePayload);
+      .rejects.toThrowError('NEW_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
   });
 
   it('should orchestrate the add comment action correctly', async () => {
@@ -49,13 +42,9 @@ describe('AddCommentUseCase', () => {
 
     const mockThreadRepository = new ThreadRepository();
     const mockCommentRepository = new CommentRepository();
-    const mockNewCommentValidator = {
-      validate: jest.fn().mockImplementation(() => {}),
-    };
 
     mockThreadRepository.verifyThreadExists = jest.fn()
       .mockImplementation(() => Promise.resolve());
-
 
     mockCommentRepository.addComment = jest.fn()
       .mockImplementation(() => Promise.resolve(new AddedComment({
@@ -67,7 +56,6 @@ describe('AddCommentUseCase', () => {
     const addCommentUseCase = new AddCommentUseCase({
       threadRepository: mockThreadRepository,
       commentRepository: mockCommentRepository,
-      newCommentValidator: mockNewCommentValidator,
     });
 
     // Action
@@ -75,7 +63,6 @@ describe('AddCommentUseCase', () => {
 
     // Assert
     expect(addedComment).toStrictEqual(expectedAddedComment);
-    expect(mockNewCommentValidator.validate).toHaveBeenCalledWith(useCasePayload);
     expect(mockThreadRepository.verifyThreadExists).toHaveBeenCalledWith(threadId);
 
     expect(mockCommentRepository.addComment).toHaveBeenCalledWith(
