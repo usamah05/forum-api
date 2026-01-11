@@ -9,7 +9,6 @@ const Jwt = require('@hapi/jwt');
 const pool = require('./database/postgres/pool');
 
 // service (repository, helper, manager, etc)
-const NewCommentValidator = require('./validator/newCommentValidator');
 const UserRepository = require('../Domains/users/UserRepository');
 const PasswordHash = require('../Applications/security/PasswordHash');
 const UserRepositoryPostgres = require('./repository/UserRepositoryPostgres');
@@ -39,10 +38,6 @@ const container = createContainer();
 
 // registering services and repository
 container.register([
-  {
-    key: 'newCommentValidator',
-    Class: NewCommentValidator,
-  },
   {
     key: UserRepository.name,
     Class: UserRepositoryPostgres,

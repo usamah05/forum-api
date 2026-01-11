@@ -177,5 +177,59 @@ describe('ThreadRepositoryPostgres', () => {
       expect(threadDetail).toHaveProperty('date', '2025-11-30T17:00:00.000Z');
       expect(threadDetail).toHaveProperty('username', 'masboy');
     });
+
+    it('should handle date as Date object and convert to ISO string', async () => {
+      // Arrange
+      const mockDate = new Date('2025-12-15T14:25:30.000Z');
+      const mockPool = {
+        query: jest.fn().mockResolvedValue({
+          rowCount: 1,
+          rows: [
+            {
+              id: 'thread-mock',
+              title: 'thread mock',
+              body: 'body mock',
+              date: mockDate, // Return as Date object, not string
+              username: 'masboy',
+            },
+          ],
+        }),
+      };
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(mockPool, {});
+
+      // Action
+      const threadDetail = await threadRepositoryPostgres.getThreadById('thread-mock');
+
+      // Assert - Verifies that the else branch (.toISOString()) was executed
+      expect(typeof threadDetail.date).toBe('string');
+      expect(threadDetail.date).toBe('2025-12-15T14:25:30.000Z');
+      expect(mockPool.query).toHaveBeenCalled();
+    });
+
+    it('should return date as string when database returns string type', async () => {
+      // Arrange
+      const mockPool = {
+        query: jest.fn().mockResolvedValue({
+          rowCount: 1,
+          rows: [
+            {
+              id: 'thread-string-date',
+              title: 'thread title',
+              body: 'thread body',
+              date: '2025-12-15T14:25:30.000Z', // Database returns as string
+              username: 'testuser',
+            },
+          ],
+        }),
+      };
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(mockPool, {});
+
+      // Action
+      const threadDetail = await threadRepositoryPostgres.getThreadById('thread-string-date');
+
+      // Assert - Verifies that the true branch (string check) was executed
+      expect(typeof threadDetail.date).toBe('string');
+      expect(threadDetail.date).toBe('2025-12-15T14:25:30.000Z');
+    });
   });
 });
