@@ -49,10 +49,6 @@ class CommentRepositoryPostgres extends CommentRepository {
 
     const result = await this._pool.query(query);
 
-    if (result.rowCount === 0) {
-      throw new NotFoundError('komentar tidak ditemukan');
-    }
-
     const comment = result.rows[0];
 
     if (comment.user_id !== owner) {

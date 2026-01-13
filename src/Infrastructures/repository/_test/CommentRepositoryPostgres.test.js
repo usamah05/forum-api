@@ -78,15 +78,6 @@ describe('CommentRepositoryPostgres', () => {
   });
 
   describe('verifyCommentOwner function', () => {
-    it('should throw NotFoundError when comment not found', async () => {
-      // Arrange
-      const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
-
-      // Action & Assert
-      await expect(commentRepositoryPostgres.verifyCommentOwner('comment-123', 'user-123'))
-        .rejects.toThrow(NotFoundError);
-    });
-
     it('should throw AuthorizationError when user is not the owner', async () => {
       // Arrange
       await UsersTableTestHelper.addUser({});
@@ -155,14 +146,12 @@ describe('CommentRepositoryPostgres', () => {
         content: 'comment pertama',
         threadId: 'thread-123',
         owner: 'user-123',
-        date: '2024-01-01',
       });
       await CommentsTableTestHelper.addComment({
         id: 'comment-456',
         content: 'comment kedua',
         threadId: 'thread-123',
         owner: 'user-123',
-        date: '2024-01-02',
       });
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(pool, {});
@@ -176,10 +165,13 @@ describe('CommentRepositoryPostgres', () => {
       expect(comments[0].username).toEqual('dicoding');
       expect(comments[0].content).toEqual('comment pertama');
       expect(comments[0].is_delete).toBe(false);
+      expect(comments[0].date).toBeDefined();
+
       expect(comments[1].id).toEqual('comment-456');
       expect(comments[1].username).toEqual('dicoding');
       expect(comments[1].content).toEqual('comment kedua');
       expect(comments[1].is_delete).toBe(false);
+      expect(comments[1].date).toBeDefined();
     });
   });
 });

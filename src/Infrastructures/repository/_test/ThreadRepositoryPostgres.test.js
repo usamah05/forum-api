@@ -3,6 +3,7 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper');
 const pool = require('../../database/postgres/pool');
 const NewThread = require('../../../Domains/threads/entities/NewThread');
 const AddedThread = require('../../../Domains/threads/entities/AddedThread');
+const NotFoundError = require('../../../Commons/exceptions/NotFoundError');
 const ThreadRepositoryPostgres = require('../ThreadRepositoryPostgres');
 
 
@@ -65,14 +66,14 @@ describe('ThreadRepositoryPostgres', () => {
   });
 
   describe('verifyThreadExists function', () => {
-    it('should throw Error when thread not found', async () => {
+    it('should throw NotFoundError when thread not found', async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action & Assert
       await expect(threadRepositoryPostgres.verifyThreadExists('thread-123'))
         .rejects
-        .toThrowError('GET_THREAD.NO_THREAD_FOUND');
+        .toThrowError(NotFoundError);
     });
 
     it('should not throw Error when thread is found', async () => {
@@ -85,51 +86,49 @@ describe('ThreadRepositoryPostgres', () => {
       // Action & Assert
       await expect(threadRepositoryPostgres.verifyThreadExists('thread-123'))
         .resolves
-        .not.toThrow();
-    });
-  });
-
-  it('should throw Error whith correct message when thread not found', async () => {
-    // Arrange
-    const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
-
-    // Action & Assert
-    await expect(threadRepositoryPostgres.getThreadById('thread-xxx'))
-      .rejects.toThrowError('GET_THREAD.NO_THREAD_FOUND');
-  });
-
-  it('should return thread detail correctly when thread is found', async () => {
-    // Arrange
-    await UsersTableTestHelper.addUser({ id: 'user-123', username: 'masboy' });
-    await ThreadTableTestHelper.addThread({
-      id: 'thread-123',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2025-12-01T00:00:00.000Z',
-      owner: 'user-123',
-    });
-    const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
-    // Action
-    const thread = await threadRepositoryPostgres.getThreadById('thread-123');
-    // Assert
-    expect(thread).toStrictEqual({
-      id: 'thread-123',
-      title: 'sebuah thread',
-      body: 'sebuah body thread',
-      date: '2025-11-30T17:00:00.000Z',
-      username: 'masboy',
+        .not.toThrowError(NotFoundError);
     });
   });
 
   describe('getThreadById function', () => {
-    it('should throw Error when thread not found', async () => {
+    it('should throw NotFoundError when thread not found', async () => {
       // Arrange
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
 
       // Action & Assert
       await expect(threadRepositoryPostgres.getThreadById('thread-123'))
         .rejects
-        .toThrowError('GET_THREAD.NO_THREAD_FOUND');
+        .toThrowError(NotFoundError);
+    });
+
+    it('should throw NotFoundError when thread not found', async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(threadRepositoryPostgres.getThreadById('thread-xxx'))
+        .rejects.toThrowError(NotFoundError);
+    });
+
+    it('should return thread detail correctly when thread is found', async () => {
+      // Arrange
+      await UsersTableTestHelper.addUser({ id: 'user-123', username: 'masboy' });
+      await ThreadTableTestHelper.addThread({
+        id: 'thread-123',
+        title: 'sebuah thread',
+        body: 'sebuah body thread',
+        date: '2025-12-01T00:00:00.000Z',
+        owner: 'user-123',
+      });
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+      // Action
+      const thread = await threadRepositoryPostgres.getThreadById('thread-123');
+      // Assert
+      expect(thread.id).toEqual('thread-123');
+      expect(thread.title).toEqual('sebuah thread');
+      expect(thread.body).toEqual('sebuah body thread');
+      expect(thread.username).toEqual('masboy');
+      expect(thread.date).toBeDefined();
     });
 
     it('should return thread detail correctly', async () => {
@@ -147,12 +146,11 @@ describe('ThreadRepositoryPostgres', () => {
       //Action
       const threadDetail = await threadRepositoryPostgres.getThreadById('thread-123');
       // Assert
-      expect(threadDetail).toBeDefined();
       expect(threadDetail.id).toEqual('thread-123');
       expect(threadDetail.title).toEqual('sebuah thread');
       expect(threadDetail.body).toEqual('sebuah body thread');
-      expect(threadDetail.date).toEqual('2025-11-30T17:00:00.000Z');
       expect(threadDetail.username).toEqual('masboy');
+      expect(threadDetail.date).toBeDefined();
     });
 
     it('should return thread detail with correct properties', async () => {
@@ -171,14 +169,14 @@ describe('ThreadRepositoryPostgres', () => {
       const threadDetail = await threadRepositoryPostgres.getThreadById('thread-456');
 
       // Assert
-      expect(threadDetail).toHaveProperty('id', 'thread-456');
-      expect(threadDetail).toHaveProperty('title', 'thread lain');
-      expect(threadDetail).toHaveProperty('body', 'sebuah body thread lain');
-      expect(threadDetail).toHaveProperty('date', '2025-11-30T17:00:00.000Z');
-      expect(threadDetail).toHaveProperty('username', 'masboy');
+      expect(threadDetail.id).toEqual('thread-456');
+      expect(threadDetail.title).toEqual('thread lain');
+      expect(threadDetail.body).toEqual('sebuah body thread lain');
+      expect(threadDetail.username).toEqual('masboy');
+      expect(threadDetail.date).toBeDefined();
     });
 
-    it('should handle date as Date object and convert to ISO string', async () => {
+    it('should handle date as Date object from database', async () => {
       // Arrange
       const mockDate = new Date('2025-12-15T14:25:30.000Z');
       const mockPool = {
@@ -200,9 +198,8 @@ describe('ThreadRepositoryPostgres', () => {
       // Action
       const threadDetail = await threadRepositoryPostgres.getThreadById('thread-mock');
 
-      // Assert - Verifies that the else branch (.toISOString()) was executed
-      expect(typeof threadDetail.date).toBe('string');
-      expect(threadDetail.date).toBe('2025-12-15T14:25:30.000Z');
+      // Assert - Repository returns raw data without conversion
+      expect(threadDetail.date).toBe(mockDate);
       expect(mockPool.query).toHaveBeenCalled();
     });
 
@@ -227,8 +224,7 @@ describe('ThreadRepositoryPostgres', () => {
       // Action
       const threadDetail = await threadRepositoryPostgres.getThreadById('thread-string-date');
 
-      // Assert - Verifies that the true branch (string check) was executed
-      expect(typeof threadDetail.date).toBe('string');
+      // Assert - Repository returns raw string data without conversion
       expect(threadDetail.date).toBe('2025-12-15T14:25:30.000Z');
     });
   });

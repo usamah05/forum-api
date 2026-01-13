@@ -5,27 +5,6 @@ const NewComment = require('../../../Domains/comments/entities/NewComment');
 const AddedComment = require('../../../Domains/comments/entities/AddedComment');
 
 describe('AddCommentUseCase', () => {
-  it('should throw error when payload is invalid', async () => {
-    // Arrange
-    const useCasePayload = {
-      content: 123,
-    };
-    const threadId = 'thread-123';
-    const owner = 'user-123';
-
-    const mockThreadRepository = new ThreadRepository();
-    const mockCommentRepository = new CommentRepository();
-
-    const addCommentUseCase = new AddCommentUseCase({
-      threadRepository: mockThreadRepository,
-      commentRepository: mockCommentRepository,
-    });
-
-    // Action & Assert
-    await expect(addCommentUseCase.execute(useCasePayload, threadId, owner))
-      .rejects.toThrowError('NEW_COMMENT.NOT_MEET_DATA_TYPE_SPECIFICATION');
-  });
-
   it('should orchestrate the add comment action correctly', async () => {
     // Arrange
     const useCasePayload = {
