@@ -5,3 +5,4 @@ config/database/test.json
 coverage
 .env
 forum-api-starter-project.zip
+forum-api-webserver.pem
